@@ -1,0 +1,140 @@
+:root {
+  --bg: #0b0b0b;
+  --surface: #0f1113;
+  --muted: #9aa3ac;
+  --text: #e6eef3;
+  --accent: #16a34a;
+  --border: rgba(255,255,255,0.04);
+}
+
+.add-tx-page {
+  padding: 24px;
+}
+
+.add-tx-card {
+  max-width: 820px;
+  margin: 0 auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px;
+  color: var(--text);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+  color-scheme: dark; /* ajuda navegadores a renderizar controles nativos em modo escuro */
+}
+
+.add-tx-header h2 { margin: 0 0 4px 0; }
+.add-tx-header .muted { color: var(--muted); margin: 0 0 12px 0; }
+
+.add-tx-form { display: flex; flex-direction: column; gap: 10px; }
+
+.field { display:flex; flex-direction:column; gap:6px; }
+.label { font-size:0.85rem; color:var(--muted); }
+
+input[type="text"],
+input[type="number"],
+input[type="datetime-local"],
+select {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.03);
+  color: var(--text);
+  padding: 8px 10px;
+  border-radius: 8px;
+  outline: none;
+  font-size: 0.95rem;
+}
+
+input.tiny { margin-top: 6px; font-size: 0.9rem; padding: 6px 8px; }
+
+input:focus, select:focus {
+  box-shadow: 0 0 0 4px rgba(22,163,74,0.06);
+  border-color: rgba(22,163,74,0.9);
+}
+
+.row { display:flex; gap: 12px; align-items:flex-end; }
+.row.between { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+
+.btn-primary {
+  background: linear-gradient(90deg,#16a34a,#0ea5a4);
+  color:#fff;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-weight:700;
+  cursor: pointer;
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid rgba(255,255,255,0.04);
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.form-error {
+  background: rgba(239,68,68,0.06);
+  color: #fecaca;
+  padding: 8px 10px;
+  border-radius:8px;
+  border: 1px solid rgba(239,68,68,0.12);
+}
+
+/* estilo consistente para selects e date input */
+.select-wrapper {
+  position: relative;
+}
+.select-wrapper select,
+.select-wrapper input[type="date"] {
+  background: rgba(255,255,255,0.02);
+  color: var(--text);
+  -webkit-text-fill-color: var(--text);
+  border: 1px solid rgba(255,255,255,0.03);
+  border-radius: 8px;
+  padding: 8px 32px 8px 10px;
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+/* seta customizada */
+.select-wrapper::after {
+  content: '';
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-45%);
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid var(--muted);
+  pointer-events: none;
+}
+
+/* tenta estilizar opções (nem todos navegadores respeitam) */
+select option,
+.select-wrapper option {
+  background: var(--surface);
+  color: var(--text);
+}
+
+/* indicador do calendário (Webkit) mantém acessível e com cor correta */
+.select-wrapper input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) sepia(0.2) saturate(0.0) hue-rotate(180deg);
+}
+
+/* foco */
+.select-wrapper select:focus,
+.select-wrapper input[type="date"]:focus {
+  box-shadow: 0 0 0 4px rgba(22,163,74,0.06);
+  border-color: rgba(22,163,74,0.9);
+}
+
+/* responsivo */
+@media (max-width: 760px) {
+  .row { flex-direction: column; align-items: stretch; }
+  .add-tx-card { padding: 14px; width: 100%; }
+}

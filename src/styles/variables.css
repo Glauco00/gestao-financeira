@@ -1,0 +1,11 @@
+:root {
+    --primary-color: #4CAF50; /* Cor primária */
+    --secondary-color: #FF5722; /* Cor secundária */
+    --background-color: #F5F5F5; /* Cor de fundo */
+    --text-color: #333333; /* Cor do texto */
+    --border-radius: 4px; /* Raio de borda */
+    --font-family: 'Arial', sans-serif; /* Fonte padrão */
+    --font-size: 16px; /* Tamanho da fonte padrão */
+    --header-height: 60px; /* Altura do cabeçalho */
+    --sidebar-width: 250px; /* Largura da barra lateral */
+}
