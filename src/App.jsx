@@ -11,7 +11,9 @@ import Dashboard from './pages/Dashboard';
 import Transacoes from './pages/Transacoes';
 import Relatorios from './pages/Relatorios';
 import Configuracoes from './pages/Configuracoes';
+import Contas from './pages/Contas';
 import AddTransaction from './pages/AddTransaction';
+import EditTransaction from './pages/EditTransaction';
 
 export default function App() {
   return (
