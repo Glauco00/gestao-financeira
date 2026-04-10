@@ -58,10 +58,10 @@ async function startServer() {
     await testConnection();
     console.log('✓ Conexão com SQL Server estabelecida com sucesso!');
     
-    app.listen(PORT, () => {
+    app.listen(PORT, '0.0.0.0', () => {
       console.log(`✓ Servidor rodando na porta ${PORT}`);
       console.log(`✓ Modo: ${process.env.NODE_ENV}`);
-      console.log(`✓ Acesse: http://localhost:${PORT}/api/health`);
+      console.log(`✓ Acesse: http://0.0.0.0:${PORT}/api/health`);
     });
   } catch (error) {
     console.error('✗ Erro ao iniciar servidor:', error.message);
