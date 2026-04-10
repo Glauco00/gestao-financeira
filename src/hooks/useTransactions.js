@@ -93,7 +93,7 @@ export function useTransactions() {
     fetchAccounts();
   }, [fetchTransactions, fetchAccounts]);
 
-  return { 
+  return useMemo(() => ({ 
     transactions, 
     accounts,
     loading, 
@@ -104,7 +104,7 @@ export function useTransactions() {
     fetchAccounts,
     getBalance,
     refresh
-  };
+  }), [transactions, accounts, loading, error, refresh, getBalance]);
 }
 
 export default useTransactions;

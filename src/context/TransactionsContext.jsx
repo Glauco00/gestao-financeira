@@ -6,9 +6,11 @@ const TransactionsContext = createContext();
 export function TransactionsProvider({ children }) {
   const txState = useRealTransactions();
 
-  // O txState já contém as funções assíncronas reais e o estado compartilhado
+  // Memoizamos o valor para garantir que o contexto só mude se o estado real mudar
+  const value = useMemo(() => txState, [txState]);
+
   return (
-    <TransactionsContext.Provider value={txState}>
+    <TransactionsContext.Provider value={value}>
       {children}
     </TransactionsContext.Provider>
   );

@@ -13,9 +13,7 @@ export default function Dashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    refresh();
-  }, [refresh]);
+  // O carregamento inicial já é tratado pelo hook useTransactions no TransactionsContext
 
   const balance = getBalance();
   const totalEntradas = transactions.filter(t => t.type === 'income').reduce((acc, t) => acc + Number(t.amount), 0);
