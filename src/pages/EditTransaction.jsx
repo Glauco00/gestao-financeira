@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useTransactionsContext } from '../context/TransactionsContext';
 import * as api from '../services/api';
 import './AddTransaction.css';
 
-export default function AddTransaction() {
+export default function EditTransaction() {
+  const { id } = useParams();
   const navigate = useNavigate();
-  const { addTransaction, accounts, loading: txLoading } = useTransactionsContext();
+  const { updateTransaction, accounts, loading: txLoading } = useTransactionsContext();
+
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
   const [type, setType] = useState('expense'); 
@@ -14,30 +16,37 @@ export default function AddTransaction() {
   const [accountId, setAccountId] = useState('');
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [date, setDate] = useState('');
   const [error, setError] = useState('');
 
   useEffect(() => {
-    // Definir conta padrão se houver contas
-    if (accounts.length > 0 && !accountId) {
-      setAccountId(accounts[0].id);
-    }
-  }, [accounts]);
-
-  useEffect(() => {
-    async function loadCategories() {
+    async function loadData() {
       try {
-        const response = await api.fetchCategories();
-        // Backend returns { success: true, data: { categories: [] } }
-        if (response.success && response.data.categories) {
-          setCategories(response.data.categories);
+        setLoading(true);
+        const [tx, catRes] = await Promise.all([
+          api.getTransaction(id),
+          api.fetchCategories()
+        ]);
+
+        if (tx) {
+          setDescription(tx.description || '');
+          setAmount(tx.amount.toString());
+          setType(tx.type);
+          setCategoryId(tx.category_id?.toString() || '');
+          setAccountId(tx.account_id?.toString() || '');
+          setDate(tx.date || '');
         }
+        
+        if (catRes.success) setCategories(catRes.data.categories);
       } catch (err) {
-        console.error('Erro ao carregar categorias', err);
+        console.error('Erro ao carregar dados:', err);
+        setError('Não foi possível carregar os dados da transação.');
+      } finally {
+        setLoading(false);
       }
     }
-    loadCategories();
-  }, []);
+    loadData();
+  }, [id]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -50,7 +59,8 @@ export default function AddTransaction() {
 
     try {
       setLoading(true);
-      await addTransaction({
+      await updateTransaction({
+        id: parseInt(id),
         description: description.trim(),
         amount: parseFloat(amount),
         type,
@@ -66,12 +76,16 @@ export default function AddTransaction() {
     }
   }
 
+  if (loading && !description) {
+    return <div className="page-loading">Carregando dados da transação...</div>;
+  }
+
   return (
     <div className="add-tx-page">
       <div className="add-tx-card glass-card">
         <header className="add-tx-header">
-          <h2>Nova Transação</h2>
-          <p className="muted">Registre uma entrada ou saída no seu controle financeiro.</p>
+          <h2>Editar Transação</h2>
+          <p className="muted">Altere os detalhes da sua movimentação financeira.</p>
         </header>
 
         <form className="add-tx-form" onSubmit={handleSubmit}>
@@ -158,7 +172,7 @@ export default function AddTransaction() {
           <div className="add-tx-footer">
             <button type="button" className="btn-ghost" onClick={() => navigate(-1)}>Cancelar</button>
             <button type="submit" className="btn-primary" disabled={loading || txLoading}>
-              {loading || txLoading ? 'Salvando...' : 'Salvar Transação'}
+              {loading || txLoading ? 'Salvando...' : 'Salvar Alterações'}
             </button>
           </div>
         </form>

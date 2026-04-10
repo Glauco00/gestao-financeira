@@ -1,13 +1,16 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { FileDown, RefreshCw, Search, Calendar, Filter } from 'lucide-react';
+import { FileDown, FileText, RefreshCw, Search, Calendar, Filter } from 'lucide-react';
 import { useTransactionsContext } from '../context/TransactionsContext';
 import * as api from '../services/api';
+import { generateFinancePDF } from '../utils/pdfGenerator';
+import { useAuth } from '../context/AuthContext';
 import './Relatorios.css';
 
 const formatCurrency = (v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(v || 0));
 
 export default function Relatorios() {
   const { transactions, loading, refresh } = useTransactionsContext();
+  const { user } = useAuth();
   const [filters, setFilters] = useState({
     startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().slice(0, 10),
     endDate: new Date().toISOString().slice(0, 10),
@@ -81,6 +84,15 @@ export default function Relatorios() {
     a.click();
   }
 
+  function handleExportPDF() {
+    generateFinancePDF({
+      transactions: filtered,
+      summary: stats,
+      period: `${new Date(filters.startDate).toLocaleDateString()} - ${new Date(filters.endDate).toLocaleDateString()}`,
+      userName: user?.name
+    });
+  }
+
   return (
     <div className="reports-page">
       <div className="page-header">
@@ -129,8 +141,11 @@ export default function Relatorios() {
             <button className="btn-outline" onClick={refresh} title="Atualizar">
               <RefreshCw size={18} className={loading ? 'spin' : ''} />
             </button>
-            <button className="btn-primary" onClick={handleExportCSV} disabled={filtered.length === 0}>
-              <FileDown size={18} /> Exportar CSV
+            <button className="btn-secondary" onClick={handleExportCSV} disabled={filtered.length === 0} title="Exportar CSV">
+              <FileDown size={18} /> CSV
+            </button>
+            <button className="btn-primary" onClick={handleExportPDF} disabled={filtered.length === 0}>
+              <FileText size={18} /> Exportar PDF
             </button>
           </div>
         </div>

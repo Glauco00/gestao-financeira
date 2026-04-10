@@ -126,10 +126,9 @@ export default function DashboardCharts() {
       const entry = byCat[k];
       const name = k;
       const value = Number(entry.totalAbs.toFixed(2));
-      const lower = name.toLowerCase();
-      const isSalary = lower.includes('salario') || lower.includes('salário') || name === 'Entradas' || name.toLowerCase().includes('salário');
-      const isNetIncome = entry.totalSigned > 0;
-      const color = isSalary || isNetIncome ? '#16a34a' : '#ef4444';
+      // Priorizar a cor da categoria vinda do banco se disponível, caso contrário usar padrão por tipo
+      const catObj = transactions.find(t => t.category_name === k);
+      const color = catObj?.category_color || (entry.totalSigned > 0 ? '#10b981' : '#ef4444');
       return { name, value, color };
     });
 

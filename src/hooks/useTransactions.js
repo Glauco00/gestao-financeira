@@ -3,6 +3,7 @@ import * as api from '../services/api';
 
 export function useTransactions() {
   const [transactions, setTransactions] = useState([]);
+  const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -11,12 +12,23 @@ export function useTransactions() {
       setLoading(true);
       setError(null);
       const data = await api.fetchTransactions(filters);
-      // O backend retorna { success: true, data: { transactions: [] } }
-      // api.js fetchTransactions faz: return response.data.data.transactions;
       setTransactions(data || []);
     } catch (err) {
       console.error('Erro ao buscar transações:', err);
       setError('Falha ao carregar transações.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchAccounts = useCallback(async () => {
+    try {
+      setLoading(true);
+      const data = await api.fetchAccounts();
+      // O backend retorna { success: true, data: [accounts] }
+      setAccounts(data || []);
+    } catch (err) {
+      console.error('Erro ao buscar contas:', err);
     } finally {
       setLoading(false);
     }
@@ -27,6 +39,8 @@ export function useTransactions() {
       setLoading(true);
       const newTx = await api.addTransaction(txData);
       setTransactions((prev) => [newTx, ...prev]);
+      // Atualizar contas se a transação afetou uma
+      if (txData.account_id) fetchAccounts();
       return newTx;
     } catch (err) {
       console.error('Erro ao adicionar transação:', err);
@@ -73,17 +87,20 @@ export function useTransactions() {
   // Carregar inicialmente
   useEffect(() => {
     fetchTransactions();
-  }, [fetchTransactions]);
+    fetchAccounts();
+  }, [fetchTransactions, fetchAccounts]);
 
   return { 
     transactions, 
+    accounts,
     loading, 
     error, 
     addTransaction, 
     removeTransaction, 
     updateTransaction, 
-    getBalance,
-    refresh: fetchTransactions 
+    fetchAccounts,
+    getBalance: () => accounts.reduce((acc, a) => acc + Number(a.balance), 0),
+    refresh: () => { fetchTransactions(); fetchAccounts(); } 
   };
 }
 

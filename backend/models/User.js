@@ -12,9 +12,16 @@ class User {
     `);
     
     const result = stmt.run(userData.name, userData.email, hashedPassword);
+    const userId = Number(result.lastInsertRowid);
+    
+    // Criar conta padrão para o novo usuário
+    db.prepare(`
+      INSERT INTO accounts (user_id, name, type, balance, currency)
+      VALUES (?, 'Carteira Principal', 'Carteira', 0, 'BRL')
+    `).run(userId);
     
     const user = db.prepare('SELECT id, name, email, created_at, updated_at FROM users WHERE id = ?')
-      .get(Number(result.lastInsertRowid));
+      .get(userId);
     
     return user;
   }

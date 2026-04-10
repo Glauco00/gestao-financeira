@@ -32,6 +32,8 @@ export default function App() {
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/transacoes" element={<Transacoes />} />
                 <Route path="/transacoes/adicionar" element={<AddTransaction />} />
+                <Route path="/transacoes/editar/:id" element={<EditTransaction />} />
+                <Route path="/contas" element={<Contas />} />
                 <Route path="/relatorios" element={<Relatorios />} />
                 <Route path="/config" element={<Configuracoes />} />
               </Route>

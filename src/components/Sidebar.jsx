@@ -18,6 +18,7 @@ export default function Sidebar() {
   const navItems = [
     { to: "/", icon: <LayoutDashboard size={20} strokeWidth={2} />, label: "Dashboard", end: true },
     { to: "/transacoes", icon: <ArrowRightLeft size={20} strokeWidth={2} />, label: "Transações" },
+    { to: "/contas", icon: <Wallet size={20} strokeWidth={2} />, label: "Contas" },
     { to: "/relatorios", icon: <PieChart size={20} strokeWidth={2} />, label: "Relatórios" },
     { to: "/config", icon: <Settings size={20} strokeWidth={2} />, label: "Configurações" }
   ];
