@@ -25,7 +25,6 @@ export function useTransactions() {
     try {
       setLoading(true);
       const data = await api.fetchAccounts();
-      // O backend retorna { success: true, data: [accounts] }
       setAccounts(data || []);
     } catch (err) {
       console.error('Erro ao buscar contas:', err);
@@ -39,7 +38,6 @@ export function useTransactions() {
       setLoading(true);
       const newTx = await api.addTransaction(txData);
       setTransactions((prev) => [newTx, ...prev]);
-      // Atualizar contas se a transação afetou uma
       if (txData.account_id) fetchAccounts();
       return newTx;
     } catch (err) {
@@ -55,6 +53,7 @@ export function useTransactions() {
       setLoading(true);
       await api.deleteTransaction(id);
       setTransactions((prev) => prev.filter((t) => t.id !== id));
+      fetchAccounts();
     } catch (err) {
       console.error('Erro ao excluir transação:', err);
       throw err;
@@ -69,6 +68,7 @@ export function useTransactions() {
       setLoading(true);
       const updated = await api.updateTransaction(txData.id, txData);
       setTransactions((prev) => prev.map((t) => (t.id === txData.id ? updated : t)));
+      fetchAccounts();
       return updated;
     } catch (err) {
       console.error('Erro ao atualizar transação:', err);
@@ -78,13 +78,16 @@ export function useTransactions() {
     }
   };
 
-  const getBalance = () =>
-    transactions.reduce(
-      (acc, t) => acc + (t.type === 'income' ? Number(t.amount) : -Number(t.amount)),
-      0
-    );
+  const refresh = useCallback(() => {
+    fetchTransactions();
+    fetchAccounts();
+  }, [fetchTransactions, fetchAccounts]);
 
-  // Carregar inicialmente
+  const getBalance = useCallback(() => {
+    if (!Array.isArray(accounts)) return 0;
+    return accounts.reduce((acc, a) => acc + Number(a.balance || 0), 0);
+  }, [accounts]);
+
   useEffect(() => {
     fetchTransactions();
     fetchAccounts();
@@ -99,28 +102,9 @@ export function useTransactions() {
     removeTransaction, 
     updateTransaction, 
     fetchAccounts,
-  const refresh = useCallback(() => {
-    fetchTransactions();
-    fetchAccounts();
-  }, [fetchTransactions, fetchAccounts]);
-
-  const getBalance = useCallback(() => {
-    if (!Array.isArray(accounts)) return 0;
-    return accounts.reduce((acc, a) => acc + Number(a.balance || 0), 0);
-  }, [accounts]);
-
-  return { 
-    transactions, 
-    accounts,
-    loading, 
-    error, 
-    addTransaction, 
-    removeTransaction, 
-    updateTransaction, 
-    fetchAccounts,
     getBalance,
     refresh
   };
-}}
+}
 
 export default useTransactions;
