@@ -3,6 +3,27 @@ import { useNavigate } from 'react-router-dom';
 import { useTransactionsContext } from '../context/TransactionsContext';
 import './AddTransaction.css';
 
+function todayLocalYYYYMMDD() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+function toDateString(v) {
+  if (!v) return todayLocalYYYYMMDD();
+  if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v)) return v;
+  if (typeof v === 'string' && v.length >= 10) return v.slice(0, 10);
+  if (v instanceof Date && !isNaN(v)) {
+    const y = v.getFullYear();
+    const m = String(v.getMonth() + 1).padStart(2, '0');
+    const d = String(v.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+  return todayLocalYYYYMMDD();
+}
+
 export default function AddTransaction() {
   const navigate = useNavigate();
   const { addTransaction } = useTransactionsContext() || {};
@@ -13,11 +34,10 @@ export default function AddTransaction() {
   const [category, setCategory] = useState('');
   const [customCategory, setCustomCategory] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('Dinheiro'); // default
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10)); // date format (YYYY-MM-DD)
+  const [date, setDate] = useState(todayLocalYYYYMMDD()); // use local YYYY-MM-DD
   const [error, setError] = useState('');
 
   const CATEGORY_OPTIONS = ['Alimentação', 'Transporte', 'Lazer', 'Salário', 'Moradia', 'Outros'];
-  // const PAYMENT_OPTIONS = ['Dinheiro', 'Cartão', 'Pix', 'Transferência Bancária', 'Outro'];
   const PAYMENT_OPTIONS = ['Dinheiro', 'Cartão de crédito', 'Cartão de débito', 'Pix', 'Transferência Bancária', 'Outro'];
 
   function validate() {
@@ -27,7 +47,7 @@ export default function AddTransaction() {
     return '';
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     const err = validate();
     if (err) {
@@ -37,21 +57,30 @@ export default function AddTransaction() {
     setError('');
 
     const finalCategory = customCategory.trim() || category || 'Outros';
+
+    // SALVA somente a string YYYY-MM-DD (sem toISOString)
+    const dateStr = toDateString(date);
+
     const tx = {
-      id: Date.now(), // usa timestamp como id
+      id: Date.now(),
       description: description.trim(),
       amount: parseFloat(Number(amount).toFixed(2)),
-      type, // 'income' | 'expense' | 'other'
+      type,
       category: finalCategory,
       paymentMethod,
-      date: new Date(date).toISOString(),
+      date: dateStr,
+    };
+
+    const payload = {
+      ...tx,
+      amount: Number(tx.amount || 0),
+      date: tx.date, // já YYYY-MM-DD
     };
 
     if (typeof addTransaction === 'function') {
-      addTransaction(tx);
+      addTransaction(payload);
     } else {
-      // fallback: dispara console (verifique seu TransactionsContext)
-      console.warn('addTransaction não encontrado no contexto. Transação:', tx);
+      console.warn('addTransaction não encontrado no contexto. Transação:', payload);
     }
 
     navigate('/transacoes');

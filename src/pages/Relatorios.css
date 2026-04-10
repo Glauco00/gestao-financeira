@@ -1,0 +1,75 @@
+:root{ --card-radius:12px; }
+
+.reports-page { padding: 18px 0; }
+
+/* header */
+.page-header h1{ margin:0 0 6px 0; }
+.page-header .muted{ margin:0 0 8px 0; color:var(--muted); }
+
+/* controls */
+.report-controls { display:flex; justify-content:space-between; gap:12px; margin-bottom:14px; align-items:flex-end; flex-wrap:wrap; }
+.report-controls .filters { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+.report-controls label { display:flex; flex-direction:column; gap:6px; font-size:13px; color:var(--muted); }
+.report-controls input[type="date"],
+.report-controls input[type="text"],
+.report-controls select { padding:8px 10px; border-radius:8px; border:1px solid rgba(255,255,255,0.04); background:transparent; color:inherit; min-width:140px; }
+.report-controls .search { display:flex; flex-direction:column; gap:6px; }
+.report-controls .search .search-input {
+  min-width: 220px;
+  width: 220px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.04);
+  background: transparent;
+  color: inherit;
+}
+.report-controls .search .search-input::placeholder { color: rgba(255,255,255,0.35); }
+
+/* actions */
+.report-controls .actions { display:flex; gap:8px; }
+.btn-primary{ background: linear-gradient(90deg,#16a34a,#06b6d4); color:#fff; border:0; padding:8px 12px; border-radius:8px; cursor:pointer; }
+.btn-secondary{ background:transparent; color:var(--muted); border:1px solid rgba(255,255,255,0.04); padding:8px 12px; border-radius:8px; cursor:pointer; }
+
+/* grid */
+.reports-grid { display:grid; grid-template-columns: 320px 1fr; gap:18px; align-items:start; }
+
+/* summary cards (vertical stack) */
+.summary-cards { display:flex; flex-direction:column; gap:12px; }
+.stat-card { padding:12px; border-radius:var(--card-radius); background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent); border:1px solid rgba(255,255,255,0.02); }
+.stat-label{ font-size:13px; color:var(--muted); margin-bottom:6px; }
+.stat-value{ font-size:18px; font-weight:700; }
+.stat-value.positive{ color:var(--accent); }
+.stat-value.negative{ color:var(--danger); }
+.stat-sub{ font-size:12px; color:var(--muted); margin-top:6px; }
+
+/* wide card */
+.card.wide { padding:12px; border-radius:var(--card-radius); background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent); border:1px solid rgba(255,255,255,0.02); }
+.chart-placeholder{ height:200px; display:flex; align-items:center; justify-content:center; color:var(--muted); border-radius:8px; background:linear-gradient(180deg, rgba(0,0,0,0.15), transparent); }
+
+/* transactions list */
+.card.report-card { padding:12px; border-radius:var(--card-radius); background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent); border:1px solid rgba(255,255,255,0.02); }
+.transactions { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:10px; }
+.tx { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px; border-radius:10px; background:linear-gradient(180deg, rgba(255,255,255,0.00), transparent); border:1px solid rgba(255,255,255,0.02); }
+.tx-left{ min-width:0; display:flex; flex-direction:column; gap:4px; }
+.title { max-width: 360px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.meta{ color:var(--muted); font-size:13px; }
+
+/* amount styling */
+.amount{ flex:0 0 auto; white-space:nowrap; font-weight:700; }
+.amount.credit { color: var(--accent, #16a34a); font-weight:700; }
+.amount.debit  { color: var(--danger, #ef4444); font-weight:700; }
+
+/* pagination */
+.pagination{ display:flex; justify-content:space-between; align-items:center; margin-top:12px; gap:12px; }
+.page-controls select{ padding:6px 8px; border-radius:6px; }
+.pages{ display:flex; gap:6px; align-items:center; }
+.pages button{ padding:6px 8px; border-radius:6px; border:1px solid rgba(255,255,255,0.04); background:transparent; color:inherit; cursor:pointer; }
+
+/* responsive */
+@media (max-width: 900px) {
+  .reports-grid { grid-template-columns: 1fr; }
+  .summary-cards { flex-direction:row; gap:10px; }
+  .stat-card { flex:1; }
+  .report-controls .search .search-input { min-width: 140px; width: 140px; }
+  .title { max-width: 200px; }
+}

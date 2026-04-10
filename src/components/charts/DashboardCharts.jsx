@@ -8,6 +8,9 @@ import {
   PieChart,
   Pie,
   Cell,
+  LineChart,
+  Line,
+  ReferenceArea,
   CartesianGrid,
   XAxis,
   YAxis,
@@ -16,14 +19,22 @@ import {
 } from 'recharts';
 import { useTransactionsContext } from '../../context/TransactionsContext';
 
-const COLORS = ['#16a34a', '#ef4444', '#06b6d4', '#f59e0b', '#7c3aed', '#ef7aa1'];
-
 const currency = (v) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(v || 0));
 
 function EmptyCard({ title, subtitle = 'Sem dados' }) {
   return (
-    <div className="card" style={{ minHeight: 220, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', color: 'var(--muted)' }}>
+    <div
+      className="card"
+      style={{
+        minHeight: 220,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        color: 'var(--muted)',
+      }}
+    >
       <h4 style={{ marginBottom: 6 }}>{title}</h4>
       <div style={{ fontSize: 14 }}>{subtitle}</div>
     </div>
@@ -33,7 +44,15 @@ function EmptyCard({ title, subtitle = 'Sem dados' }) {
 function CustomTooltip({ active, payload, label }) {
   if (!active || !payload || payload.length === 0) return null;
   return (
-    <div style={{ background: '#0f1113', color: 'var(--text)', padding: 10, borderRadius: 8, border: '1px solid rgba(255,255,255,0.04)' }}>
+    <div
+      style={{
+        background: '#0f1113',
+        color: 'var(--text)',
+        padding: 10,
+        borderRadius: 8,
+        border: '1px solid rgba(255,255,255,0.04)',
+      }}
+    >
       <div style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 6 }}>{label}</div>
       {payload.map((p) => (
         <div key={p.name} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, minWidth: 160 }}>
@@ -49,7 +68,7 @@ function CustomTooltip({ active, payload, label }) {
 }
 
 export default function DashboardCharts() {
-  const { transactions } = useTransactionsContext();
+  const { transactions = [] } = useTransactionsContext() || {};
 
   const { balanceSeries, monthlySeries, categorySeries } = useMemo(() => {
     if (!transactions || transactions.length === 0) {
@@ -60,15 +79,16 @@ export default function DashboardCharts() {
     const byDay = {};
     transactions
       .slice()
-      .sort((a, b) => a.id - b.id)
+      .sort((a, b) => new Date(a.date || a.id || a.createdAt) - new Date(b.date || b.id || b.createdAt))
       .forEach((t) => {
-        const day = new Date(t.id).toLocaleDateString();
+        const day = new Date(t.date || t.id || t.createdAt).toLocaleDateString();
         const val = (t.type === 'income' ? 1 : -1) * Number(t.amount || 0);
         byDay[day] = (byDay[day] || 0) + val;
       });
+
     const days = Object.keys(byDay).sort((a, b) => new Date(a) - new Date(b));
     let cum = 0;
-    const balanceSeries = days.map((d) => {
+    const balanceSeriesLocal = days.map((d) => {
       cum += byDay[d];
       return { date: d, balance: Number(cum.toFixed(2)) };
     });
@@ -76,12 +96,13 @@ export default function DashboardCharts() {
     // Monthly series (income / expense)
     const byMonth = {};
     transactions.forEach((t) => {
-      const dt = new Date(t.id);
+      const dt = new Date(t.date || t.id || t.createdAt);
       const key = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}`;
       byMonth[key] = byMonth[key] || { month: key, income: 0, expense: 0 };
       if (t.type === 'income') byMonth[key].income += Number(t.amount || 0);
       else byMonth[key].expense += Number(t.amount || 0);
     });
+
     const months = Object.values(byMonth)
       .sort((a, b) => a.month.localeCompare(b.month))
       .map((m) => ({
@@ -94,21 +115,37 @@ export default function DashboardCharts() {
     const byCat = {};
     transactions.forEach((t) => {
       const cat = t.category || (t.type === 'income' ? 'Entradas' : 'Outros');
-      byCat[cat] = (byCat[cat] || 0) + Math.abs(Number(t.amount || 0));
+      const signed = (t.type === 'income' ? 1 : -1) * Number(t.amount || 0);
+      const abs = Math.abs(Number(t.amount || 0));
+      if (!byCat[cat]) byCat[cat] = { totalAbs: 0, totalSigned: 0 };
+      byCat[cat].totalAbs += abs;
+      byCat[cat].totalSigned += signed;
     });
-    const categorySeries = Object.keys(byCat).map((k, i) => ({ name: k, value: Number(byCat[k].toFixed(2)), color: COLORS[i % COLORS.length] }));
 
-    return { balanceSeries, monthlySeries: months, categorySeries };
+    const categorySeriesLocal = Object.keys(byCat).map((k) => {
+      const entry = byCat[k];
+      const name = k;
+      const value = Number(entry.totalAbs.toFixed(2));
+      const lower = name.toLowerCase();
+      const isSalary = lower.includes('salario') || lower.includes('salário') || name === 'Entradas' || name.toLowerCase().includes('salário');
+      const isNetIncome = entry.totalSigned > 0;
+      const color = isSalary || isNetIncome ? '#16a34a' : '#ef4444';
+      return { name, value, color };
+    });
+
+    return {
+      balanceSeries: balanceSeriesLocal,
+      monthlySeries: months,
+      categorySeries: categorySeriesLocal,
+    };
   }, [transactions]);
 
-  // constants to keep uniform sizes and prevent cut
   const yAxisWidth = 88;
   const chartHeight = 220;
 
-  // grid 2x2: Balance, Pie (moved), Monthly bars (moved), Fluxo (net)
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18 }}>
-      {/* Card 1: Evolução do Saldo */}
+      {/* Evolução do Saldo */}
       {balanceSeries.length === 0 ? (
         <EmptyCard title="Evolução do Saldo" />
       ) : (
@@ -132,7 +169,7 @@ export default function DashboardCharts() {
         </div>
       )}
 
-      {/* Card 2: Gastos por Categoria (moved to top-right) */}
+      {/* Gastos por Categoria */}
       {categorySeries.length === 0 ? (
         <EmptyCard title="Gastos por Categoria" />
       ) : (
@@ -163,7 +200,7 @@ export default function DashboardCharts() {
         </div>
       )}
 
-      {/* Card 3: Entradas x Saídas (mensal) - moved to bottom-left */}
+      {/* Entradas x Saídas (mensal) */}
       {monthlySeries.length === 0 ? (
         <EmptyCard title="Entradas x Saídas (mensal)" />
       ) : (
@@ -175,7 +212,7 @@ export default function DashboardCharts() {
               <XAxis dataKey="monthLabel" tick={{ fill: 'var(--muted)', fontSize: 12 }} />
               <YAxis width={yAxisWidth} tickFormatter={(v) => currency(v)} tick={{ fill: 'var(--muted)', fontSize: 12 }} />
               <Tooltip content={<CustomTooltip />} />
-              <Legend verticalAlign="top" height={30} wrapperStyle={{ marginLeft: 48}} />
+              <Legend verticalAlign="top" height={30} wrapperStyle={{ marginLeft: 48 }} />
               <Bar dataKey="income" name="Entradas" stackId="a" fill="#16a34a" radius={[0, 0, 0, 0]} />
               <Bar dataKey="expense" name="Saídas" stackId="a" fill="#ef4444" radius={[6, 6, 0, 0]} />
             </BarChart>
@@ -183,26 +220,32 @@ export default function DashboardCharts() {
         </div>
       )}
 
-      {/* Card 4: Fluxo Líquido Mensal (bottom-right) */}
+      {/* Fluxo Líquido Mensal - Multi-line com faixas verticais alternadas */}
       {monthlySeries.length === 0 ? (
         <EmptyCard title="Fluxo Líquido Mensal" />
       ) : (
         <div className="card">
           <h4 style={{ marginBottom: 10 }}>Fluxo Líquido Mensal</h4>
           <ResponsiveContainer width="100%" height={chartHeight}>
-            <AreaChart data={monthlySeries} margin={{ top: 6, right: 24, left: 0, bottom: 0 }}>
-              <defs>
-                <linearGradient id="g2" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#f59e0b" stopOpacity={0.14} />
-                  <stop offset="100%" stopColor="#f59e0b" stopOpacity={0.02} />
-                </linearGradient>
-              </defs>
+            <LineChart data={monthlySeries} margin={{ top: 6, right: 24, left: 0, bottom: 0 }}>
               <CartesianGrid stroke="rgba(255,255,255,0.03)" vertical={false} />
-              <XAxis dataKey="monthLabel" tick={{ fill: 'var(--muted)', fontSize: 12 }} />
+              <XAxis dataKey="monthLabel" type="category" tick={{ fill: 'var(--muted)', fontSize: 12 }} />
               <YAxis width={yAxisWidth} tickFormatter={(v) => currency(v)} tick={{ fill: 'var(--muted)', fontSize: 12 }} />
               <Tooltip content={<CustomTooltip />} />
-              <Area type="monotone" dataKey="net" stroke="#f59e0b" strokeWidth={2} fill="url(#g2)" />
-            </AreaChart>
+              <Legend verticalAlign="top" height={30} wrapperStyle={{ marginLeft: 48 }} />
+
+              {/* faixas verticais alternadas */}
+              {monthlySeries.map((m, i) => {
+                if (i % 2 === 1) return null;
+                const x1 = monthlySeries[i].monthLabel;
+                const x2 = monthlySeries[i + 1] ? monthlySeries[i + 1].monthLabel : monthlySeries[i].monthLabel;
+                return <ReferenceArea key={`ra-${i}`} x1={x1} x2={x2} strokeOpacity={0} fill="rgba(255,255,255,0.03)" />;
+              })}
+
+              <Line type="monotone" dataKey="income" name="Entradas" stroke="#16a34a" strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+              <Line type="monotone" dataKey="expense" name="Saídas" stroke="#f59e0b" strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+              <Line type="monotone" dataKey="net" name="Fluxo líquido" stroke="#06b6d4" strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+            </LineChart>
           </ResponsiveContainer>
         </div>
       )}

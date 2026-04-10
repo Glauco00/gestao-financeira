@@ -1,5 +1,5 @@
 import React from 'react';
-import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Layout from '../components/Layout';
 
@@ -18,35 +18,29 @@ function Private({ children }) {
   return children;
 }
 
-const routes = [
-  { path: '/login', element: <Login /> },
-  { path: '/register', element: <Register /> },
-  {
-    path: '/',
-    element: (
-      <Private>
-        <Layout />
-      </Private>
-    ),
-    children: [
-      { index: true, element: <Dashboard /> },
-      { path: 'transacoes', element: <Transacoes /> },
-      { path: 'transacoes/adicionar', element: <AddTransaction /> },
-      { path: 'metas', element: <Metas /> },
-      { path: 'relatorios', element: <Relatorios /> },
-      { path: 'config', element: <Configuracoes /> },
-    ],
-  },
-  { path: '*', element: <Navigate to="/" replace /> },
-];
-
-const router = createBrowserRouter(routes, {
-  future: {
-    v7_startTransition: true,
-    v7_relativeSplatPath: true,
-  },
-});
-
 export default function AppRoutes() {
-  return <RouterProvider router={router} />;
+  return (
+    <Router>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route
+          path="/"
+          element={
+            <Private>
+              <Layout />
+            </Private>
+          }
+        >
+          <Route index element={<Dashboard />} />
+          <Route path="transacoes" element={<Transacoes />} />
+          <Route path="transacoes/adicionar" element={<AddTransaction />} />
+          <Route path="metas" element={<Metas />} />
+          <Route path="relatorios" element={<Relatorios />} />
+          <Route path="config" element={<Configuracoes />} />
+        </Route>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Router>
+  );
 }

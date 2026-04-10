@@ -66,19 +66,100 @@ body{
 .stat-label { color:var(--muted); font-size:0.9rem; margin-top:6px; }
 
 /* Transactions list */
+.transactions, .transactions-list, .recent-transactions { margin:0; padding:0; list-style:none; }
+
 .transactions {
   display:flex; flex-direction:column; gap:12px;
 }
 .tx {
-  display:flex; align-items:center; justify-content:space-between;
-  gap:12px; padding:10px; border-radius:10px;
+  display: flex;
+  align-items: center; /* alinha verticalmente itens */
+  justify-content: space-between;
+  gap: 12px;
+  padding:10px; border-radius:10px;
   background: linear-gradient(180deg, rgba(255,255,255,0.01), transparent);
   border: 1px solid rgba(255,255,255,0.02);
 }
-.tx .meta { color:var(--muted); font-size:0.9rem; }
-.tx .amount { font-weight:700; }
-.tx .amount.positive { color:var(--accent); }
-.tx .amount.negative { color:var(--danger); }
+
+/* garante que filhos da linha possam encolher corretamente */
+.tx > * { min-width: 0; }
+
+/* a coluna da esquerda (conteúdo) deve ocupar o espaço disponível */
+.tx > div:first-child {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* título: forçar truncamento em uma linha com ellipsis */
+.tx .title,
+.tx .name,
+.tx strong,
+.tx .tx-title,
+.tx .transaction-title {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 700;
+}
+
+/* meta/descrição (data/categoria) */
+.tx .meta,
+.tx .txn-meta { color: var(--muted); font-size: 0.9rem; }
+
+/* valor (amount) fixa a largura e não quebra linha */
+.tx .amount,
+.tx .txn-amount {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  margin-left: 12px;
+  font-weight: 700;
+}
+
+/* === Restaurar cores dos valores nas transações ===
+   Usa várias variações de classe (.credit/.debit, .income/.expense, .positive/.negative)
+   para cobrir diferentes nomes que o componente pode aplicar.
+*/
+.tx .amount,
+.tx .txn-amount,
+.transaction-amount {
+  /* valor padrão */
+  color: var(--text);
+  font-weight: 700;
+  white-space: nowrap;
+  display: inline-block;
+}
+
+/* entradas / positivos (verde) */
+.tx.credit .amount,
+.tx .amount.credit,
+.tx .amount.income,
+.tx .amount.positive,
+.tx .txn-amount.credit,
+.tx .txn-amount.income,
+.transaction-amount.credit {
+  color: var(--accent);
+}
+
+/* saídas / negativos (vermelho) */
+.tx.debit .amount,
+.tx .amount.debit,
+.tx .amount.expense,
+.tx .amount.negative,
+.tx .txn-amount.debit,
+.tx .txn-amount.expense,
+.transaction-amount.debit {
+  color: var(--danger);
+}
+
+/* caso algum reset global esteja sobrescrevendo, aumentar especificidade */
+.main-content .tx .amount.credit,
+.main-content .tx .amount.debit {
+  font-weight: 700;
+}
 
 /* Headings */
 h1,h2,h3{color:var(--text);margin:0 0 8px 0}
@@ -94,4 +175,63 @@ h1{font-size:1.6rem}
   .header nav { display:none }
   .sidebar { transform: translateX(-100%); position:fixed; z-index:40; top:var(--header-height); }
   .sidebar.open { transform: translateX(0); }
+}
+
+/* Tornar hamburger funcional em todas resoluções e permitir colapso do sidebar */
+.header .hamburger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.02);
+  z-index: 70;
+}
+
+/* Colapso do sidebar (toggle deve adicionar/remover .collapsed em .sidebar ou body.sidebar-collapsed) */
+.sidebar {
+  transition: transform .18s ease, width .18s ease, margin .18s ease;
+  transform: translateX(0);
+}
+
+/* Desktop collapse: esconde a sidebar apenas quando NÃO estiver explicitamente aberta (.open) */
+body.sidebar-collapsed .sidebar:not(.open),
+.sidebar.collapsed:not(.open),
+.sidebar.hidden {
+  transform: translateX(-100%);
+}
+
+/* Força visibilidade quando aberta (override para mobile e desktop) */
+.sidebar.open {
+  transform: translateX(0) !important;
+}
+
+/* Ajusta a área principal quando sidebar está colapsado (desktop) */
+body.sidebar-collapsed .main-content,
+.sidebar.collapsed ~ .main-content,
+.sidebar.hidden ~ .main-content {
+  margin-left: 0;
+}
+
+/* Mobile behavior: por padrão escondida; .open mostra */
+@media (max-width: 760px) {
+  .sidebar {
+    transform: translateX(-100%);
+    position: fixed;
+    z-index: 40;
+    top: var(--header-height);
+    left: 0;
+  }
+  .sidebar.open { transform: translateX(0) !important; }
+  /* quando o mobile abrir, não queremos que body.sidebar-collapsed esconda a sidebar */
+  body.sidebar-collapsed .sidebar.open { transform: translateX(0) !important; }
+}
+
+/* garante que botões primários continuem centralizados */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }

@@ -7,95 +7,137 @@
   --border: rgba(255,255,255,0.04);
 }
 
+/* aumentado largura do card para telas maiores (leve aumento) */
+.login-card {
+  width: 760px; /* aumentei um pouco */
+  max-width: 96%;
+  border-radius: 14px;
+  padding: 26px;
+  background: var(--surface);
+  border: 1px solid rgba(255,255,255,0.03);
+  box-shadow: 0 12px 36px rgba(2,6,23,0.6);
+}
+
+/* link de criar conta estilo botão discreto */
+.btn-create-account {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text);
+  border: 1px solid rgba(255,255,255,0.04);
+  text-decoration: none;
+  font-weight: 700;
+  transition: all .12s ease;
+}
+.btn-create-account:hover {
+  background: rgba(255,255,255,0.02);
+  transform: translateY(-2px);
+  color: #fff;
+}
+
+/* manter o restante do estilo atual */
 .login-page {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(180deg, #070707 0%, #0b0b0b 100%);
-  padding: 32px;
-}
-
-.login-card {
-  width: 420px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.6);
-  color: var(--text);
+  padding: 28px;
 }
 
 .login-brand {
   display: flex;
-  gap: 14px;
+  gap: 12px;
   align-items: center;
   margin-bottom: 18px;
 }
 
 .login-brand .logo {
-  width:52px; height:52px; border-radius:10px;
-  display:inline-flex; align-items:center; justify-content:center;
-  background: linear-gradient(135deg,#0ea5a4,#16a34a);
-  color:#fff; font-weight:800; font-size:18px;
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg,#06b6d4,#16a34a);
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.05rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.18);
 }
 
-.login-brand h1 { margin: 0; font-size:1.15rem; }
-.login-brand .muted { margin:0; color:var(--muted); font-size:0.9rem; }
+.login-brand h1 { margin: 0; font-size: 1.05rem; }
+.login-brand .muted { margin: 0; color: var(--muted); font-size: 0.95rem; }
 
-.login-form { display:flex; flex-direction:column; gap:12px; margin-top:6px; }
+/* formulário e campos */
+.login-form { display: flex; flex-direction: column; gap: 14px; margin-top: 8px; }
+.field { display: flex; flex-direction: column; gap: 8px; }
+.field .label { font-size: 13px; color: var(--muted); }
 
-.field { display:flex; flex-direction:column; gap:6px; }
-.label { font-size:0.85rem; color:var(--muted); }
-
+/* inputs com tamanho um pouco maior para melhor usabilidade */
 input[type="email"],
-input[type="password"] {
-  background: rgba(255,255,255,0.02);
-  border: 1px solid rgba(255,255,255,0.03);
-  color: var(--text);
-  padding: 10px 12px;
-  border-radius: 8px;
-  outline: none;
-  font-size: 0.95rem;
-}
-
-input:focus {
-  box-shadow: 0 0 0 4px rgba(22,163,74,0.06);
-  border-color: rgba(22,163,74,0.9);
-}
-
-.row.between { display:flex; justify-content:space-between; align-items:center; margin-top:4px; }
-
-.checkbox { display:flex; align-items:center; gap:8px; color:var(--muted); font-size:0.9rem; }
-.checkbox input { width:16px; height:16px; }
-
-.link { color:var(--muted); text-decoration:none; font-size:0.9rem; }
-.link:hover { color:var(--text); text-decoration:underline; }
-
-.btn-primary {
-  margin-top:6px;
-  background: linear-gradient(90deg,#16a34a,#0ea5a4);
-  color:#fff;
-  border: none;
-  padding: 10px 12px;
+input[type="password"],
+input[type="text"],
+.login-card input {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.04);
+  padding: 12px;
   border-radius: 10px;
-  font-weight:700;
-  cursor: pointer;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+  color: var(--text);
+  outline: none;
+  font-size: 15px;
 }
 
-.btn-primary:active { transform: translateY(1px); }
+/* placeholder mais sutil */
+input::placeholder { color: rgba(255,255,255,0.22); }
 
-.login-error {
-  background: rgba(239,68,68,0.08);
-  color: #fecaca;
+/* garantir que o campo nome de usuário (que pode ser input[type=text]) apareça com estilo */
+.login-card input[type="text"] { font-weight: 500; }
+
+/* estilo do link "Já tem conta? Entrar" quando usa a classe muted */
+.login-card a.muted,
+.login-card .muted a,
+.login-card .muted {
+  color: var(--muted);
+  font-size: 14px;
+  text-decoration: none;
+}
+.login-card a.muted:hover,
+.login-card .muted a:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+/* mensagens de erro */
+.form-error {
+  background: rgba(239,68,68,0.06);
+  color: var(--danger, #ef4444);
   padding: 8px 10px;
-  border-radius:8px;
-  border: 1px solid rgba(239,68,68,0.15);
-  font-size:0.95rem;
+  border-radius: 8px;
+  border: 1px solid rgba(239,68,68,0.12);
+  font-size: 13px;
 }
 
-.login-help { font-size:0.85rem; color:var(--muted); margin-top:8px; text-align:center; }
-@media (max-width:480px){
-  .login-card{ width:100%; padding:18px; border-radius:8px; }
+/* botão primário */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #fff;
+  border: 0;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 15px;
+}
+.btn-primary[disabled] { opacity: 0.7; cursor: default; }
+
+/* responsividade: reduzir largura do card em telas pequenas */
+@media (max-width: 720px) {
+  .login-card { width: 96%; padding: 18px; }
+  .login-brand .logo { width: 52px; height: 52px; }
+  .btn-create-account { padding: 8px 10px; }
 }
