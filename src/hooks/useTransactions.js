@@ -99,8 +99,27 @@ export function useTransactions() {
     removeTransaction, 
     updateTransaction, 
     fetchAccounts,
-    getBalance: () => accounts.reduce((acc, a) => acc + Number(a.balance), 0),
-    refresh: () => { fetchTransactions(); fetchAccounts(); } 
+  const refresh = useCallback(() => {
+    fetchTransactions();
+    fetchAccounts();
+  }, [fetchTransactions, fetchAccounts]);
+
+  const getBalance = useCallback(() => {
+    if (!Array.isArray(accounts)) return 0;
+    return accounts.reduce((acc, a) => acc + Number(a.balance || 0), 0);
+  }, [accounts]);
+
+  return { 
+    transactions, 
+    accounts,
+    loading, 
+    error, 
+    addTransaction, 
+    removeTransaction, 
+    updateTransaction, 
+    fetchAccounts,
+    getBalance,
+    refresh
   };
 }
 
