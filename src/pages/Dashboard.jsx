@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTransactionsContext } from '../context/TransactionsContext';
 import DashboardCharts from '../components/charts/DashboardCharts';
+import { TrendingUp, TrendingDown, Plus, ArrowRight } from 'lucide-react';
 
 export default function Dashboard() {
   const { transactions, getBalance } = useTransactionsContext();
@@ -11,8 +12,7 @@ export default function Dashboard() {
   const totalEntradas = transactions.reduce((s, t) => s + (t.type === 'income' ? Number(t.amount) : 0), 0);
   const totalDespesas = transactions.reduce((s, t) => s + (t.type === 'expense' ? Number(t.amount) : 0), 0);
 
-  // limite de últimas transações exibidas
-  const LAST_N = 6;
+  const LAST_N = 5;
   const latest = transactions
     .slice()
     .sort((a, b) => {
@@ -23,120 +23,113 @@ export default function Dashboard() {
     .slice(0, LAST_N);
 
   return (
-    <>
-      <h1>Dashboard</h1>
+    <div className="dashboard-wrapper">
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+        <h1>Dashboard</h1>
+        <button className="btn-primary" onClick={() => navigate('/transacoes/adicionar')}>
+          <Plus size={18} /> Nova Transação
+        </button>
+      </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: 18, alignItems: 'start' }}>
-        <div>
-          <div
-            className="card"
-            style={{
-              marginBottom: 18,
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}
-          >
-            <div>
-              <div style={{ color: 'var(--muted)', fontSize: 13 }}>Saldo Atual</div>
-              <div className="stat-value" style={{ fontSize: 26 }}>{`R$ ${Number(balance).toFixed(2)}`}</div>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-end' }}>
-              <button
-                className="btn-primary"
-                onClick={() => navigate('/transacoes/adicionar')}
-                style={{ padding: '8px 14px', borderRadius: 10 }}
-              >
-                Adicionar transação
-              </button>
+      <div className="dashboard-grid">
+        <div className="dashboard-main">
+          {/* Hero Card */}
+          <div className="card" style={{ marginBottom: 24, background: 'linear-gradient(135deg, rgba(16,185,129,0.15) 0%, rgba(24,24,27,0.8) 100%)', border: '1px solid rgba(16,185,129,0.3)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div className="stat-label" style={{ color: 'var(--text)', opacity: 0.8 }}>Saldo Total</div>
+                <div className="stat-value" style={{ fontSize: '2.5rem', marginTop: 4 }}>
+                  {`R$ ${Number(balance).toFixed(2)}`}
+                </div>
+              </div>
             </div>
           </div>
 
-          <DashboardCharts />
+          <div className="card" style={{ padding: '24px 16px' }}>
+            <h3 style={{ marginLeft: 8, marginBottom: 16 }}>Visão Geral</h3>
+            <DashboardCharts />
+          </div>
         </div>
 
-        <aside style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <div className="card" style={{ marginBottom: 0 }}>
-            <h3>Resumo</h3>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8 }}>
-              <div style={{ color: 'var(--muted)' }}>Entradas</div>
-              <div style={{ color: 'var(--accent)', fontWeight: 700 }}>R$ {Number(totalEntradas).toFixed(2)}</div>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8 }}>
-              <div style={{ color: 'var(--muted)' }}>Saídas</div>
-              <div style={{ color: 'var(--danger)', fontWeight: 700 }}>R$ {Number(totalDespesas).toFixed(2)}</div>
-            </div>
-
-            <hr style={{ border: 'none', borderTop: '1px solid rgba(255,255,255,0.04)', margin: '12px 0' }} />
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8 }}>
-              <div style={{ color: 'var(--muted)' }}>Saldo</div>
-              <div style={{ fontWeight: 900, fontSize: 18, color: balance >= 0 ? 'var(--accent)' : 'var(--danger)' }}>
-                R$ {Number(balance).toFixed(2)}
+        <aside className="dashboard-side" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+          {/* Resumo Card */}
+          <div className="card summary-card">
+            <h3 style={{ marginBottom: 16 }}>Resumo do Mês</h3>
+            
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid var(--border)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ background: 'rgba(16,185,129,0.1)', padding: 8, borderRadius: 10, color: 'var(--accent)' }}>
+                  <TrendingUp size={18} />
+                </div>
+                <span style={{ color: 'var(--muted)', fontWeight: 500 }}>Entradas</span>
               </div>
+              <span style={{ fontWeight: 700, color: 'var(--accent)' }}>R$ {Number(totalEntradas).toFixed(2)}</span>
             </div>
 
-            <div style={{ marginTop: 12 }}>
-              <button
-                className="btn-primary"
-                onClick={() => navigate('/transacoes/adicionar')}
-                style={{ padding: '8px 12px', borderRadius: 10, width: '100%' }}
-              >
-                Adicionar transação
-              </button>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid var(--border)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ background: 'rgba(239,68,68,0.1)', padding: 8, borderRadius: 10, color: 'var(--danger)' }}>
+                  <TrendingDown size={18} />
+                </div>
+                <span style={{ color: 'var(--muted)', fontWeight: 500 }}>Saídas</span>
+              </div>
+              <span style={{ fontWeight: 700, color: 'var(--danger)' }}>R$ {Number(totalDespesas).toFixed(2)}</span>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 16 }}>
+              <span style={{ color: 'var(--text)', fontWeight: 600 }}>Saldo Líquido</span>
+              <span style={{ fontWeight: 800, fontSize: '1.2rem', color: balance >= 0 ? 'var(--accent)' : 'var(--danger)' }}>
+                R$ {Number(balance).toFixed(2)}
+              </span>
             </div>
           </div>
 
-          {/* Lista de transações (embaixo do resumo) - agora ocupa o espaço restante e tem padding interno */}
-          <div className="card" style={{ display: 'flex', flexDirection: 'column', minHeight: 180, flex: 1 }}>
-            <h3 style={{ marginBottom: -5 }}>Últimas {LAST_N} transações</h3>
-
-            {/* área rolável com padding interno */}
-            <div style={{ flex: 1, overflowY: 'auto', padding: '8px 6px 4px 6px' }}>
-              {latest.length === 0 ? (
-                <p style={{ color: 'var(--muted)', margin: 0 }}>Nenhuma transação encontrada.</p>
-              ) : (
-                <div className="transactions">
-                  {latest.map((t, idx) => (
-                    <div
-                      key={(t.id || idx) + Math.random()}
-                      className="tx"
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        padding: '10px 6px',
-                        borderBottom: '1px solid rgba(255,255,255,0.02)',
-                      }}
-                    >
-                      <div>
-                        <strong style={{ display: 'block' }}>{t.description || (t.type === 'income' ? 'Entrada' : 'Saída')}</strong>
-                        <div className="meta" style={{ marginTop: 4 }}>{new Date(t.id || t.createdAt || Date.now()).toLocaleString()}</div>
-                        {t.category && <div className="meta" style={{ fontSize: 12 }}>{t.category}</div>}
-                      </div>
-                      <div className={`amount ${t.type === 'income' ? 'positive' : 'negative'}`} style={{ marginLeft: 12 }}>
-                        R$ {Number(t.amount || 0).toFixed(2)}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+          {/* Últimas Transações */}
+          <div className="card" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <h3 style={{ margin: 0 }}>Histórico Recente</h3>
+              <button 
+                onClick={() => navigate('/transacoes')} 
+                className="btn-icon" 
+                style={{ border: 'none', background: 'transparent' }}
+                title="Ver todas"
+              >
+                <ArrowRight size={18} />
+              </button>
             </div>
 
-            {/* rodapé do card com o botão, sempre visível */}
-            {transactions.length > LAST_N && (
-              <div style={{ paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.02)', marginTop: 6, textAlign: 'center' }}>
-                <button className="btn-primary" onClick={() => navigate('/transacoes')} style={{ padding: '6px 10px', borderRadius: 8 }}>
-                  Ver todas ({transactions.length})
-                </button>
-              </div>
-            )}
+            <div className="transactions" style={{ flex: 1 }}>
+              {latest.length === 0 ? (
+                <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--muted)' }}>
+                  <p>Nenhuma transação ainda.</p>
+                </div>
+              ) : (
+                latest.map((t, idx) => (
+                  <div key={(t.id || idx) + Math.random()} className="tx">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                       <div style={{ 
+                         background: t.type === 'income' ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', 
+                         color: t.type === 'income' ? 'var(--accent)' : 'var(--danger)',
+                         padding: 10, 
+                         borderRadius: 10 
+                       }}>
+                         {t.type === 'income' ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
+                       </div>
+                       <div>
+                         <strong className="title">{t.description || (t.type === 'income' ? 'Entrada' : 'Saída')}</strong>
+                         {t.category && <div className="meta" style={{ marginTop: 2 }}>{t.category}</div>}
+                       </div>
+                    </div>
+                    <div className={`amount ${t.type === 'income' ? 'positive' : 'negative'}`}>
+                      {t.type === 'income' ? '+' : '-'} R$ {Number(t.amount || 0).toFixed(2)}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </aside>
       </div>
-    </>
+    </div>
   );
 }
