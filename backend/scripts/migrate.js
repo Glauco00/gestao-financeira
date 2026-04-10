@@ -13,6 +13,10 @@ const migrations = [
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       );
+
+      -- Inserir usuário sistema (ID 0) para suportar categorias globais e restrições de FK
+      INSERT OR IGNORE INTO users (id, name, email, password) 
+      VALUES (0, 'Sistema', 'system@finance.app', 'SYSTEM_LOCKED');
     `,
   },
   {
