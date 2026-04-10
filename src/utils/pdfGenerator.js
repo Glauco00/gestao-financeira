@@ -72,7 +72,7 @@ export const generateFinancePDF = ({ transactions, summary, period, userName }) 
   doc.setTextColor(255, 255, 255);
   doc.text('BALANÇO LÍQUIDO', margin + (cardWidth * 2) + 15, yPos + 8);
   doc.setFontSize(14);
-  doc.setTextColor(summary.balance >= 0 ? 16, 185, 129 : 239, 68, 68);
+  doc.setTextColor(...(summary.balance >= 0 ? primaryColor : dangerColor));
   doc.text(`R$ ${summary.balance.toFixed(2)}`, margin + (cardWidth * 2) + 15, yPos + 18);
 
   // --- TRANSACTIONS TABLE ---
