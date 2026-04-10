@@ -11,6 +11,9 @@ services:
       - DB_PATH=/app/data/database.sqlite
       # É RECOMENDADO MUDAR O JWT_SECRET NO COOLIFY
       - JWT_SECRET=${JWT_SECRET:-super_secret_key_change_me_in_production}
+      # ADMIN: Troque estas variáveis via UI do Coolify para sua real senha!
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@finance.app}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin_seguro_123}
     volumes:
       - gestao_data:/app/data
     restart: always
