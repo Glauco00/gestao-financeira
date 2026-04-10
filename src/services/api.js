@@ -90,7 +90,7 @@ export const getTransactionStats = async (startDate, endDate) => {
 // ==================== ACCOUNTS ====================
 export const fetchAccounts = async () => {
   const response = await api.get('/accounts');
-  return response.data.data;
+  return response.data.data.accounts;
 };
 
 export const getAccount = async (id) => {
