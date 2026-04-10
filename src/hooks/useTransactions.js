@@ -1,28 +1,68 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import * as api from '../services/api';
 
 export function useTransactions() {
-  const [transactions, setTransactions] = useState(() => {
+  const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const fetchTransactions = useCallback(async (filters = {}) => {
     try {
-      const raw = localStorage.getItem('transactions');
-      return raw ? JSON.parse(raw) : [];
-    } catch {
-      return [];
+      setLoading(true);
+      setError(null);
+      const data = await api.fetchTransactions(filters);
+      // O backend retorna { success: true, data: { transactions: [] } }
+      // api.js fetchTransactions faz: return response.data.data.transactions;
+      setTransactions(data || []);
+    } catch (err) {
+      console.error('Erro ao buscar transações:', err);
+      setError('Falha ao carregar transações.');
+    } finally {
+      setLoading(false);
     }
-  });
+  }, []);
 
-  useEffect(() => {
+  const addTransaction = async (txData) => {
     try {
-      localStorage.setItem('transactions', JSON.stringify(transactions));
-    } catch {
-      /* ignore */
+      setLoading(true);
+      const newTx = await api.addTransaction(txData);
+      setTransactions((prev) => [newTx, ...prev]);
+      return newTx;
+    } catch (err) {
+      console.error('Erro ao adicionar transação:', err);
+      throw err;
+    } finally {
+      setLoading(false);
     }
-  }, [transactions]);
+  };
 
-  const addTransaction = (tx) =>
-    setTransactions((prev) => [{ id: Date.now(), ...tx }, ...prev]);
+  const removeTransaction = async (id) => {
+    try {
+      setLoading(true);
+      await api.deleteTransaction(id);
+      setTransactions((prev) => prev.filter((t) => t.id !== id));
+    } catch (err) {
+      console.error('Erro ao excluir transação:', err);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const removeTransaction = (id) =>
-    setTransactions((prev) => prev.filter((t) => t.id !== id));
+  const updateTransaction = async (txData) => {
+    if (!txData.id) return;
+    try {
+      setLoading(true);
+      const updated = await api.updateTransaction(txData.id, txData);
+      setTransactions((prev) => prev.map((t) => (t.id === txData.id ? updated : t)));
+      return updated;
+    } catch (err) {
+      console.error('Erro ao atualizar transação:', err);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getBalance = () =>
     transactions.reduce(
@@ -30,7 +70,21 @@ export function useTransactions() {
       0
     );
 
-  return { transactions, addTransaction, removeTransaction, getBalance };
+  // Carregar inicialmente
+  useEffect(() => {
+    fetchTransactions();
+  }, [fetchTransactions]);
+
+  return { 
+    transactions, 
+    loading, 
+    error, 
+    addTransaction, 
+    removeTransaction, 
+    updateTransaction, 
+    getBalance,
+    refresh: fetchTransactions 
+  };
 }
 
 export default useTransactions;

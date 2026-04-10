@@ -1,127 +1,139 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTransactionsContext } from '../context/TransactionsContext';
+import { useAuth } from '../context/AuthContext';
 import DashboardCharts from '../components/charts/DashboardCharts';
-import { TrendingUp, TrendingDown, Plus, ArrowRight } from 'lucide-react';
+import { TrendingUp, TrendingDown, Plus, ArrowRight, Wallet, Clock, Loader2 } from 'lucide-react';
+import './Dashboard.css';
+
+const formatCurrency = (v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(v || 0));
 
 export default function Dashboard() {
-  const { transactions, getBalance } = useTransactionsContext();
-  const balance = getBalance();
+  const { transactions, loading, getBalance, refresh } = useTransactionsContext();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
-  const totalEntradas = transactions.reduce((s, t) => s + (t.type === 'income' ? Number(t.amount) : 0), 0);
-  const totalDespesas = transactions.reduce((s, t) => s + (t.type === 'expense' ? Number(t.amount) : 0), 0);
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
 
-  const LAST_N = 5;
-  const latest = transactions
-    .slice()
-    .sort((a, b) => {
-      const ta = Number(a.id || a.createdAt || 0);
-      const tb = Number(b.id || b.createdAt || 0);
-      return tb - ta;
-    })
-    .slice(0, LAST_N);
+  const balance = getBalance();
+  const totalEntradas = transactions.filter(t => t.type === 'income').reduce((acc, t) => acc + Number(t.amount), 0);
+  const totalDespesas = transactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + Number(t.amount), 0);
+
+  const latest = [...transactions]
+    .sort((a, b) => new Date(b.date || b.created_at) - new Date(a.date || a.created_at))
+    .slice(0, 5);
+
+  if (loading && transactions.length === 0) {
+    return (
+      <div className="dashboard-loading">
+        <Loader2 className="spin" size={48} />
+        <p>Carregando seus dados financeiros...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="dashboard-wrapper">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <h1>Dashboard</h1>
+      <header className="dashboard-header">
+        <div className="welcome">
+          <h1>Olá, {user?.name?.split(' ')[0] || 'Usuário'}! 👋</h1>
+          <p className="muted">Aqui está o que aconteceu com suas finanças hoje.</p>
+        </div>
         <button className="btn-primary" onClick={() => navigate('/transacoes/adicionar')}>
           <Plus size={18} /> Nova Transação
         </button>
-      </div>
+      </header>
 
       <div className="dashboard-grid">
         <div className="dashboard-main">
-          {/* Hero Card */}
-          <div className="card" style={{ marginBottom: 24, background: 'linear-gradient(135deg, rgba(16,185,129,0.15) 0%, rgba(24,24,27,0.8) 100%)', border: '1px solid rgba(16,185,129,0.3)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <div className="stat-label" style={{ color: 'var(--text)', opacity: 0.8 }}>Saldo Total</div>
-                <div className="stat-value" style={{ fontSize: '2.5rem', marginTop: 4 }}>
-                  {`R$ ${Number(balance).toFixed(2)}`}
-                </div>
+          {/* Main Card */}
+          <div className="card hero-card glass-card">
+            <div className="card-content">
+              <div className="info">
+                <span className="label">Saldo Total Disponível</span>
+                <h2 className="balance-value">{formatCurrency(balance)}</h2>
+              </div>
+              <div className="card-icon">
+                <Wallet size={32} />
+              </div>
+            </div>
+            <div className="card-footer">
+              <div className="mini-stat">
+                <div className="dot positive"></div>
+                <span>Você economizou 12% a mais este mês</span>
               </div>
             </div>
           </div>
 
-          <div className="card" style={{ padding: '24px 16px' }}>
-            <h3 style={{ marginLeft: 8, marginBottom: 16 }}>Visão Geral</h3>
-            <DashboardCharts />
+          <div className="charts-section card glass-card">
+            <div className="card-header">
+              <h3>Visão Semanal</h3>
+              <select className="select-tiny">
+                <option>Últimos 7 dias</option>
+                <option>Último mês</option>
+              </select>
+            </div>
+            <div className="chart-container">
+              <DashboardCharts />
+            </div>
           </div>
         </div>
 
-        <aside className="dashboard-side" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-          {/* Resumo Card */}
-          <div className="card summary-card">
-            <h3 style={{ marginBottom: 16 }}>Resumo do Mês</h3>
-            
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid var(--border)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div style={{ background: 'rgba(16,185,129,0.1)', padding: 8, borderRadius: 10, color: 'var(--accent)' }}>
+        <aside className="dashboard-side">
+          <div className="card glass-card summary-card">
+            <h3>Resumo Mensal</h3>
+            <div className="stat-row">
+              <div className="stat-info">
+                <div className="icon-box positive">
                   <TrendingUp size={18} />
                 </div>
-                <span style={{ color: 'var(--muted)', fontWeight: 500 }}>Entradas</span>
+                <div className="text">
+                  <span className="label">Receitas</span>
+                  <span className="value positive">{formatCurrency(totalEntradas)}</span>
+                </div>
               </div>
-              <span style={{ fontWeight: 700, color: 'var(--accent)' }}>R$ {Number(totalEntradas).toFixed(2)}</span>
             </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid var(--border)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div style={{ background: 'rgba(239,68,68,0.1)', padding: 8, borderRadius: 10, color: 'var(--danger)' }}>
+            <div className="stat-row">
+              <div className="stat-info">
+                <div className="icon-box negative">
                   <TrendingDown size={18} />
                 </div>
-                <span style={{ color: 'var(--muted)', fontWeight: 500 }}>Saídas</span>
+                <div className="text">
+                  <span className="label">Despesas</span>
+                  <span className="value negative">{formatCurrency(totalDespesas)}</span>
+                </div>
               </div>
-              <span style={{ fontWeight: 700, color: 'var(--danger)' }}>R$ {Number(totalDespesas).toFixed(2)}</span>
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 16 }}>
-              <span style={{ color: 'var(--text)', fontWeight: 600 }}>Saldo Líquido</span>
-              <span style={{ fontWeight: 800, fontSize: '1.2rem', color: balance >= 0 ? 'var(--accent)' : 'var(--danger)' }}>
-                R$ {Number(balance).toFixed(2)}
-              </span>
             </div>
           </div>
 
-          {/* Últimas Transações */}
-          <div className="card" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <h3 style={{ margin: 0 }}>Histórico Recente</h3>
-              <button 
-                onClick={() => navigate('/transacoes')} 
-                className="btn-icon" 
-                style={{ border: 'none', background: 'transparent' }}
-                title="Ver todas"
-              >
+          <div className="card glass-card history-card">
+            <div className="card-header">
+              <h3>Atividade Recente</h3>
+              <button className="btn-ghost-icon" onClick={() => navigate('/relatorios')}>
                 <ArrowRight size={18} />
               </button>
             </div>
-
-            <div className="transactions" style={{ flex: 1 }}>
+            
+            <div className="tx-list">
               {latest.length === 0 ? (
-                <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--muted)' }}>
-                  <p>Nenhuma transação ainda.</p>
+                <div className="empty-state">
+                  <Clock size={32} className="muted" />
+                  <p>Nenhuma atividade recente encontrada.</p>
                 </div>
               ) : (
-                latest.map((t, idx) => (
-                  <div key={(t.id || idx) + Math.random()} className="tx">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                       <div style={{ 
-                         background: t.type === 'income' ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', 
-                         color: t.type === 'income' ? 'var(--accent)' : 'var(--danger)',
-                         padding: 10, 
-                         borderRadius: 10 
-                       }}>
-                         {t.type === 'income' ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
-                       </div>
-                       <div>
-                         <strong className="title">{t.description || (t.type === 'income' ? 'Entrada' : 'Saída')}</strong>
-                         {t.category && <div className="meta" style={{ marginTop: 2 }}>{t.category}</div>}
-                       </div>
+                latest.map((t) => (
+                  <div key={t.id} className="tx-item">
+                    <div className="tx-icon">
+                      {t.category_icon || (t.type === 'income' ? '💰' : '💸')}
+                    </div>
+                    <div className="tx-info">
+                      <span className="title" title={t.description}>{t.description}</span>
+                      <span className="meta">{t.category_name}</span>
                     </div>
                     <div className={`amount ${t.type === 'income' ? 'positive' : 'negative'}`}>
-                      {t.type === 'income' ? '+' : '-'} R$ {Number(t.amount || 0).toFixed(2)}
+                      {t.type === 'income' ? '+' : '-'} {formatCurrency(t.amount)}
                     </div>
                   </div>
                 ))

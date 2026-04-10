@@ -116,7 +116,7 @@ export const deleteAccount = async (id) => {
 export const fetchCategories = async (type = null) => {
   const params = type ? `?type=${type}` : '';
   const response = await api.get(`/categories${params}`);
-  return response.data.data.categories;
+  return response.data;
 };
 
 export const getCategory = async (id) => {
