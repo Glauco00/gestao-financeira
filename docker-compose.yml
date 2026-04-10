@@ -9,8 +9,9 @@ services:
       - NODE_ENV=production
       - PORT=3001
       - DB_PATH=/app/data/database.sqlite
-      # É RECOMENDADO MUDAR O JWT_SECRET NO COOLIFY
+      # JWT: É ALTAMENTE RECOMENDADO MUDAR O JWT_SECRET NO COOLIFY
       - JWT_SECRET=${JWT_SECRET:-super_secret_key_change_me_in_production}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-7d}
       # ADMIN: Troque estas variáveis via UI do Coolify para sua real senha!
       - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@finance.app}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin_seguro_123}

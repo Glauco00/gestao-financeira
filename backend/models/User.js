@@ -14,7 +14,7 @@ class User {
     const result = stmt.run(userData.name, userData.email, hashedPassword);
     
     const user = db.prepare('SELECT id, name, email, created_at, updated_at FROM users WHERE id = ?')
-      .get(result.lastInsertRowid);
+      .get(Number(result.lastInsertRowid));
     
     return user;
   }

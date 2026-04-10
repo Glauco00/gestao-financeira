@@ -52,11 +52,14 @@ class AuthController {
         }
       }
       
-      // Gerar token
+      // Gerar token com fallbacks de segurança para evitar crashes se o ENV falhar
+      const secret = process.env.JWT_SECRET || 'fallback_secret_key_gestao_fin';
+      const expiresIn = process.env.JWT_EXPIRES_IN || '7d';
+
       const token = jwt.sign(
-        { userId: user.id, email: user.email },
-        process.env.JWT_SECRET,
-        { expiresIn: process.env.JWT_EXPIRES_IN }
+        { userId: Number(user.id), email: user.email },
+        secret,
+        { expiresIn }
       );
       
       // Remover senha do objeto final
