@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, ArrowRightLeft, PieChart, Settings } from 'lucide-react';
+import { LayoutDashboard, ArrowRightLeft, Wallet, PieChart, Settings } from 'lucide-react';
 import './Sidebar.css';
 
 export default function Sidebar() {
