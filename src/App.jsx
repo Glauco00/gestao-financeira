@@ -4,9 +4,9 @@ import { AuthProvider } from './context/AuthContext';
 import { TransactionsProvider } from './context/TransactionsContext';
 import { SidebarProvider } from './context/SidebarContext';
 import Layout from './components/Layout';
+import PrivateRoute from './components/PrivateRoute';
 
 import Login from './pages/Login';
-import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Transacoes from './pages/Transacoes';
 import Relatorios from './pages/Relatorios';
@@ -15,30 +15,33 @@ import AddTransaction from './pages/AddTransaction';
 
 export default function App() {
   return (
-    <AuthProvider>
-      <TransactionsProvider>
-        <SidebarProvider>
-          <Router>
+    <Router>
+      <AuthProvider>
+        <TransactionsProvider>
+          <SidebarProvider>
             <Routes>
-              {/* rotas de autenticação fora do layout */}
+              {/* Rotas públicas */}
               <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
 
-              {/* rotas que usam o layout (header + sidebar) */}
-              <Route element={<Layout />}>
+              {/* Rotas protegidas (exigem autenticação) */}
+              <Route element={
+                <PrivateRoute>
+                  <Layout />
+                </PrivateRoute>
+              }>
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/transacoes" element={<Transacoes />} />
                 <Route path="/transacoes/adicionar" element={<AddTransaction />} />
                 <Route path="/relatorios" element={<Relatorios />} />
-                <Route path="/config" element={<Configuracoes />} /> {/* ADICIONADO */}
-                {/* adicionar outras rotas internas aqui */}
+                <Route path="/config" element={<Configuracoes />} />
               </Route>
 
+              {/* Redirecionamento genérico */}
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
-          </Router>
-        </SidebarProvider>
-      </TransactionsProvider>
-    </AuthProvider>
+          </SidebarProvider>
+        </TransactionsProvider>
+      </AuthProvider>
+    </Router>
   );
 }

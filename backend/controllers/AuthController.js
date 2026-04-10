@@ -4,49 +4,11 @@ const { validationResult } = require('express-validator');
 
 class AuthController {
   static async register(req, res) {
-    try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(400).json({ 
-          error: true, 
-          message: 'Dados inválidos', 
-          errors: errors.array() 
-        });
-      }
-      
-      const { name, email, password } = req.body;
-      
-      // Verificar se usuário já existe
-      const existingUser = await User.findByEmail(email);
-      if (existingUser) {
-        return res.status(409).json({ 
-          error: true, 
-          message: 'E-mail já cadastrado' 
-        });
-      }
-      
-      // Criar usuário
-      const user = await User.create({ name, email, password });
-      
-      // Gerar token
-      const token = jwt.sign(
-        { userId: user.id, email: user.email },
-        process.env.JWT_SECRET,
-        { expiresIn: process.env.JWT_EXPIRES_IN }
-      );
-      
-      res.status(201).json({
-        success: true,
-        message: 'Usuário cadastrado com sucesso',
-        data: { user, token }
-      });
-    } catch (error) {
-      console.error('Erro no registro:', error);
-      res.status(500).json({ 
-        error: true, 
-        message: 'Erro ao cadastrar usuário' 
-      });
-    }
+    // Registro bloqueado, sistema operando em modo "Admin Only" via .env
+    return res.status(403).json({ 
+      error: true, 
+      message: 'O cadastro de novos usuários está bloqueado pelo administrador.' 
+    });
   }
   
   static async login(req, res) {
@@ -61,23 +23,33 @@ class AuthController {
       }
       
       const { email, password } = req.body;
-      
-      // Buscar usuário
-      const user = await User.findByEmail(email);
-      if (!user) {
-        return res.status(401).json({ 
-          error: true, 
-          message: 'E-mail ou senha incorretos' 
-        });
-      }
-      
-      // Validar senha
-      const isValidPassword = await User.validatePassword(password, user.password);
-      if (!isValidPassword) {
-        return res.status(401).json({ 
-          error: true, 
-          message: 'E-mail ou senha incorretos' 
-        });
+      let user = await User.findByEmail(email);
+
+      const adminEmail = process.env.ADMIN_EMAIL;
+      const adminPassword = process.env.ADMIN_PASSWORD;
+
+      // Se for a tentativa de login do ADMIN via .env
+      if (adminEmail && adminPassword && email === adminEmail && password === adminPassword) {
+        // Se o admin não existir no banco de dados, nós o criamos automaticamente na primeira vez
+        if (!user) {
+           user = await User.create({ name: 'Administrador', email: adminEmail, password: adminPassword });
+        }
+      } else {
+        // Se não for o admin master (ou as senhas do master nao baterem), tentar fluxo normal de DB
+        if (!user) {
+          return res.status(401).json({ 
+            error: true, 
+            message: 'E-mail ou senha incorretos' 
+          });
+        }
+        
+        const isValidPassword = await User.validatePassword(password, user.password);
+        if (!isValidPassword) {
+          return res.status(401).json({ 
+            error: true, 
+            message: 'E-mail ou senha incorretos' 
+          });
+        }
       }
       
       // Gerar token
@@ -87,7 +59,7 @@ class AuthController {
         { expiresIn: process.env.JWT_EXPIRES_IN }
       );
       
-      // Remover senha do objeto
+      // Remover senha do objeto final
       delete user.password;
       
       res.json({
