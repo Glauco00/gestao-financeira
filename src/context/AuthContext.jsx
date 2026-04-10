@@ -58,13 +58,39 @@ export function AuthProvider({ children }) {
     }
   }
 
+  async function updateProfile(userData) {
+    try {
+      const response = await api.updateProfile(userData);
+      if (response && response.success && response.data.user) {
+        setUser(response.data.user);
+        return response.data.user;
+      }
+      throw new Error(response.message || "Erro ao atualizar perfil");
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async function changePassword(newPassword) {
+    try {
+      const response = await api.changePassword(newPassword);
+      if (response && response.success && response.data.user) {
+        setUser(response.data.user);
+        return response.data.user;
+      }
+      throw new Error(response.message || "Erro ao alterar senha");
+    } catch (error) {
+      throw error;
+    }
+  }
+
   function logout() {
     api.logout();
     setUser(null);
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, register, loadingInitial }}>
+    <AuthContext.Provider value={{ user, login, logout, register, updateProfile, changePassword, loadingInitial }}>
       {children}
     </AuthContext.Provider>
   );

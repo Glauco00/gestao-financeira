@@ -146,7 +146,12 @@ export const getProfile = async () => {
 
 export const updateProfile = async (userData) => {
   const response = await api.put('/users/profile', userData);
-  return response.data.data.user;
+  return response.data;
+};
+
+export const changePassword = async (newPassword) => {
+  const response = await api.put('/users/profile', { password: newPassword });
+  return response.data;
 };
 
 export default api;
