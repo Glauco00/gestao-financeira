@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const { testConnection } = require('./config/database');
+const { runMigrations } = require('./scripts/migrate');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -57,6 +58,9 @@ async function startServer() {
     // Testar conexão com o banco
     await testConnection();
     console.log('✓ Conexão com SQL Server estabelecida com sucesso!');
+    
+    // Garantir que as tabelas existem
+    runMigrations();
     
     app.listen(PORT, '0.0.0.0', () => {
       console.log(`✓ Servidor rodando na porta ${PORT}`);
