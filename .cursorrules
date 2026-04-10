@@ -1,0 +1,30 @@
+# Regras e Preferências do Usuário (Glauco)
+
+Este arquivo serve como contexto global para o assistente de IA. Leia e aplique estas preferências ao gerar ou refatorar código neste projeto.
+
+## 1. Idioma e Comunicação
+- **Respostas da IA**: Sempre responda de forma direta e prática em **Português (Brasil)**. O usuário prefere ações e resultados ao invés de longas explicações teóricas.
+- **Nomenclatura no Código**:
+  - Arquivos, variáveis, funções e componentes principais devem ser escritos em **Inglês** (ex: `TransactionsContext`, `useTransactions`).
+  - Telas, rotas e componentes estritamente visuais para o usuário final podem usar o nome em **Português** (ex: `Transacoes.jsx`, `Relatorios.jsx`).
+  - Documentação e mensagens de Commit devem ser em **Português**.
+
+## 2. Stack Tecnológica Favorita
+- **Frontend**: React encapsulado com **Vite**.
+- **Backend**: Node.js com Express.
+- **Banco de Dados**: SQLite estruturado com `better-sqlite3`.
+- **Estilização**: Uso forte de **CSS Vanilla** (CSS puro) sem TailwindCSS, criando designs modernos, utilizando variáveis globais e mantendo a interface leve.
+
+## 3. Infraestrutura e Deploy (Docker + Coolify)
+- **Deploy**: Realizado primariamente pelo **Coolify** puxando o repositório do Git em formato **Docker Compose**.
+- **Regras para Docker**:
+  - SEMPRE utilize imagens base ultraleves no Docker para prevenir esgotamento de memória e timeouts. Ex: `node:20-alpine` (frontend) ou `node:20-slim` (backend Node).
+  - Em aplicações Fullstack, use o **Nginx** no contêiner do Frontend não apenas para servir o React (configurando fallback `index.html`), mas também como um **Proxy** (`/api`) apontando pela rede interna para o serviço do backend.
+  - **Regra de Ouro do Coolify (Traefik)**: **NUNCA** faça "bind" de portas para o host (`ports: - "80:80"`) no `docker-compose.yml`. Deixe apenas o internal `EXPOSE` nas imagens para evitar expor APIs abertas para a rede global ou causar conflitos de porta na VPS física.
+
+## 4. Práticas de Git e Controle de Versão
+- O usuário desenvolve localmente no **Windows**, mas o deploy é no **Linux**. Tenha cuidado extra com **letras maiúsculas e minúsculas (Case Sensitivity)** nos `import`s do React e atente-se ao fechamento das aspas antes de rodar comandos.
+- Commits devem descrever a ação que resolve a questão relatada, num padrão comum (ex: `fix(build): ...`, `chore: ...`).
+
+## 5. Próximos Passos
+> **Nota do Usuário**: Eu posso editar este arquivo a qualquer momento adicionando mais "regras" do jeito que eu gosto de escrever meu código. A IA deve revisitar esse arquivo automaticamente sempre que tiver dúvidas sobre decisões de tecnologia no projeto.
