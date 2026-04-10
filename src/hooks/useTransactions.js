@@ -121,6 +121,6 @@ export function useTransactions() {
     getBalance,
     refresh
   };
-}
+}}
 
 export default useTransactions;
