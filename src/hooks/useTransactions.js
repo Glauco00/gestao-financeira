@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import * as api from '../services/api';
 
 export function useTransactions() {
@@ -23,22 +23,19 @@ export function useTransactions() {
 
   const fetchAccounts = useCallback(async () => {
     try {
-      setLoading(true);
       const data = await api.fetchAccounts();
       setAccounts(data || []);
     } catch (err) {
       console.error('Erro ao buscar contas:', err);
-    } finally {
-      setLoading(false);
     }
   }, []);
 
-  const addTransaction = async (txData) => {
+  const addTransaction = useCallback(async (txData) => {
     try {
       setLoading(true);
       const newTx = await api.addTransaction(txData);
       setTransactions((prev) => [newTx, ...prev]);
-      if (txData.account_id) fetchAccounts();
+      if (txData.account_id) await fetchAccounts();
       return newTx;
     } catch (err) {
       console.error('Erro ao adicionar transação:', err);
@@ -46,29 +43,29 @@ export function useTransactions() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [fetchAccounts]);
 
-  const removeTransaction = async (id) => {
+  const removeTransaction = useCallback(async (id) => {
     try {
       setLoading(true);
       await api.deleteTransaction(id);
       setTransactions((prev) => prev.filter((t) => t.id !== id));
-      fetchAccounts();
+      await fetchAccounts();
     } catch (err) {
       console.error('Erro ao excluir transação:', err);
       throw err;
     } finally {
       setLoading(false);
     }
-  };
+  }, [fetchAccounts]);
 
-  const updateTransaction = async (txData) => {
+  const updateTransaction = useCallback(async (txData) => {
     if (!txData.id) return;
     try {
       setLoading(true);
       const updated = await api.updateTransaction(txData.id, txData);
       setTransactions((prev) => prev.map((t) => (t.id === txData.id ? updated : t)));
-      fetchAccounts();
+      await fetchAccounts();
       return updated;
     } catch (err) {
       console.error('Erro ao atualizar transação:', err);
@@ -76,7 +73,7 @@ export function useTransactions() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [fetchAccounts]);
 
   const refresh = useCallback(() => {
     fetchTransactions();
@@ -88,26 +85,18 @@ export function useTransactions() {
     return accounts.reduce((acc, a) => acc + Number(a.balance || 0), 0);
   }, [accounts]);
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      fetchTransactions();
-      fetchAccounts();
-    }
-  }, [fetchTransactions, fetchAccounts]);
-
-  return useMemo(() => ({ 
-    transactions, 
+  return useMemo(() => ({
+    transactions,
     accounts,
-    loading, 
-    error, 
-    addTransaction, 
-    removeTransaction, 
-    updateTransaction, 
+    loading,
+    error,
+    addTransaction,
+    removeTransaction,
+    updateTransaction,
     fetchAccounts,
     getBalance,
     refresh
-  }), [transactions, accounts, loading, error, refresh, getBalance]);
+  }), [transactions, accounts, loading, error, addTransaction, removeTransaction, updateTransaction, fetchAccounts, getBalance, refresh]);
 }
 
 export default useTransactions;

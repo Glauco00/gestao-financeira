@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useMemo } from 'react';
+import React, { createContext, useContext, useMemo, useEffect } from 'react';
 import { useTransactions as useRealTransactions } from '../hooks/useTransactions';
 import { useAuth } from './AuthContext';
 
@@ -8,6 +8,12 @@ const TransactionsContext = createContext();
 function TransactionsLoader({ children }) {
   const txState = useRealTransactions();
   const value = useMemo(() => txState, [txState]);
+
+  // Carrega os dados uma única vez quando o componente monta (usuário autenticado)
+  useEffect(() => {
+    txState.refresh();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // [] garante execução única - refresh é estável por useCallback
 
   return (
     <TransactionsContext.Provider value={value}>
