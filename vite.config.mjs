@@ -7,6 +7,11 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      workbox: {
+        cleanupOutdatedCaches: true,
+        skipWaiting: true,
+        clientsClaim: true,
+      },
       includeAssets: ['favicon.png', 'logo192.png', 'logo512.png'],
       manifest: {
         name: 'Gesta Financeira',

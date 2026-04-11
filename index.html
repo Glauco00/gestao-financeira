@@ -12,6 +12,23 @@
     <link rel="apple-touch-icon" href="/logo192.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <title>Gestão Financeira</title>
+    <script>
+      // Destruição imediata de Service Workers bugados/cachados
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for(var registration of registrations) {
+            registration.unregister();
+            console.log('SW Killed');
+          }
+        });
+      }
+      // Limpeza de cache de storage se houver sinal de erro persistente
+      if (window.location.search.includes('reset=true')) {
+        localStorage.clear();
+        sessionStorage.clear();
+        window.location.href = window.location.pathname;
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
