@@ -89,8 +89,11 @@ export function useTransactions() {
   }, [accounts]);
 
   useEffect(() => {
-    fetchTransactions();
-    fetchAccounts();
+    const token = localStorage.getItem('token');
+    if (token) {
+      fetchTransactions();
+      fetchAccounts();
+    }
   }, [fetchTransactions, fetchAccounts]);
 
   return useMemo(() => ({ 
