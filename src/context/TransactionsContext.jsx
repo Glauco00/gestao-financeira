@@ -39,6 +39,8 @@ const emptyState = {
 export function TransactionsProvider({ children }) {
   const { user, loadingInitial } = useAuth();
 
+  console.log('[DEBUG] TransactionsProvider render:', { user: !!user, loadingInitial });
+
   // Se não há usuário, provê estado vazio e não faz requisições
   if (!user || loadingInitial) {
     return (

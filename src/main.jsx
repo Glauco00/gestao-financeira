@@ -15,10 +15,14 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// Registrar Service Worker atualizado
-registerSW({ immediate: true });
+// Desativado temporariamente para debugar loop de cache
+// registerSW({ immediate: true });
 
-console.log('🚀 Aplicação iniciada com proteções anti-loop v4');
+console.log('--- DIAGNÓSTICO DE INICIALIZAÇÃO ---');
+console.log('Build ID: ' + new Date().toISOString());
+console.log('Pathname:', window.location.pathname);
+console.log('Token exist:', !!localStorage.getItem('token'));
+console.log('------------------------------------');
 
 const rootEl = document.getElementById('root');
 if (!rootEl) console.error('Elemento #root não encontrado em index.html');
