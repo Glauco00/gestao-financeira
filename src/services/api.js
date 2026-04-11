@@ -22,9 +22,8 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       localStorage.clear(); // Limpa tudo para garantir um estado limpo
-      if (window.location.pathname !== '/login') {
-        window.location.href = '/login';
-      }
+      // Removido window.location.href para evitar loop de recarregamento
+      // O App irá redirecionar via PrivateRoute/Navigate automaticamente
     }
     return Promise.reject(error);
   }
