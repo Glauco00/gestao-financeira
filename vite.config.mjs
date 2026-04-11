@@ -14,9 +14,12 @@ export default defineConfig({
       },
       includeAssets: ['favicon.png', 'logo192.png', 'logo512.png'],
       manifest: {
-        name: 'Gesta Financeira',
+        id: '/',
+        start_url: '/',
+        scope: '/',
+        name: 'Gestão Financeira Inteligente',
         short_name: 'Gesta',
-        description: 'Gestão Financeira Inteligente e Premium',
+        description: 'Gestão Financeira Inteligente e Premium - Controle suas finanças com elegância.',
         theme_color: '#09090b',
         background_color: '#09090b',
         display: 'standalone',
@@ -36,7 +39,7 @@ export default defineConfig({
             src: 'logo512.png',
             sizes: '512x512',
             type: 'image/png',
-            purpose: 'any maskable'
+            purpose: 'maskable'
           }
         ]
       }
