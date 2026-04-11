@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import React, { createContext, useState, useEffect, useContext, useMemo, useCallback } from 'react';
 import * as api from '../services/api';
 
 const AuthContext = createContext();
@@ -7,19 +7,21 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loadingInitial, setLoadingInitial] = useState(true);
 
-  // Initialize session from API if a token exists in localStorage
+  // Carregar usuário inicial apenas se não estivermos no login e houver um token
   useEffect(() => {
     async function loadUser() {
       const token = localStorage.getItem('token');
-      if (token) {
+      const isLoginPage = window.location.pathname === '/login';
+
+      if (token && !isLoginPage) {
         try {
           const userData = await api.getMe();
-          if (userData && userData.data && userData.data.user) {
+          if (userData?.data?.user) {
             setUser(userData.data.user);
           }
         } catch (error) {
-          console.error("Failed to load user session, token might be invalid/expired.", error);
-          api.logout(); // removes token and user from localStorage
+          console.error("Sessão expirada ou inválida:", error.message);
+          localStorage.clear();
           setUser(null);
         }
       }
@@ -28,74 +30,66 @@ export function AuthProvider({ children }) {
     loadUser();
   }, []);
 
-  async function login(credentials) {
+  const login = useCallback(async (credentials) => {
     try {
       const response = await api.login(credentials);
-      if (response && response.data && response.data.user) {
+      if (response?.data?.user) {
         setUser(response.data.user);
         return response.data.user;
       }
-      throw new Error("Invalid response format");
+      throw new Error("Formato de resposta inválido");
     } catch (error) {
       throw error;
     }
-  }
+  }, []);
 
-  async function register(userData) {
+  const logout = useCallback(() => {
+    api.logout();
+    setUser(null);
+  }, []);
+
+  const register = useCallback(async (userData) => {
     try {
       const response = await api.register(userData);
-      // After registering, API might send token back, if not we login implicitly
-      if (response.data && response.data.token) {
+      if (response.data?.token) {
         localStorage.setItem('token', response.data.token);
         setUser(response.data.user);
         return response.data.user;
       } else {
-        // Fallback: Just login right after registration so user isn't forced to re-type
         return await login({ email: userData.email, password: userData.password });
       }
     } catch (error) {
       throw error;
     }
-  }
+  }, [login]);
 
-  async function updateProfile(userData) {
-    try {
-      const response = await api.updateProfile(userData);
-      if (response && response.success && response.data.user) {
-        setUser(response.data.user);
-        return response.data.user;
-      }
-      throw new Error(response.message || "Erro ao atualizar perfil");
-    } catch (error) {
-      throw error;
+  const updateProfile = useCallback(async (userData) => {
+    const response = await api.updateProfile(userData);
+    if (response?.success && response.data?.user) {
+      setUser(response.data.user);
+      return response.data.user;
     }
-  }
+    throw new Error(response?.message || "Erro ao atualizar perfil");
+  }, []);
 
-  async function changePassword(newPassword) {
-    try {
-      const response = await api.changePassword(newPassword);
-      if (response && response.success && response.data.user) {
-        setUser(response.data.user);
-        return response.data.user;
-      }
-      throw new Error(response.message || "Erro ao alterar senha");
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  function logout() {
-    api.logout();
-    setUser(null);
-  }
+  const value = useMemo(() => ({
+    user,
+    loadingInitial,
+    login,
+    logout,
+    register,
+    updateProfile
+  }), [user, loadingInitial, login, logout, register, updateProfile]);
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, register, updateProfile, changePassword, loadingInitial }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
 }
 
 export function useAuth() {
-  return useContext(AuthContext);
-}
+  const context = useContext(AuthContext);
+  if (!context) throw new Error('useAuth deve ser usado dentro de um AuthProvider');
+  return context;
+}
