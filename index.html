@@ -13,16 +13,7 @@
     <link rel="manifest" href="/manifest.webmanifest" />
     <title>Gestão Financeira</title>
     <script>
-      // Destruição imediata de Service Workers bugados/cachados
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(function(registrations) {
-          for(var registration of registrations) {
-            registration.unregister();
-            console.log('SW Killed');
-          }
-        });
-      }
-      // Limpeza de cache de storage se houver sinal de erro persistente
+      // Utilitário de emergência para limpar estado via URL: ?reset=true
       if (window.location.search.includes('reset=true')) {
         localStorage.clear();
         sessionStorage.clear();
