@@ -19,32 +19,32 @@ export default function App() {
   return (
     <Router>
       <AuthProvider>
-        <TransactionsProvider>
-          <SidebarProvider>
-            <Routes>
-              {/* Rotas públicas */}
-              <Route path="/login" element={<Login />} />
+        <SidebarProvider>
+          <Routes>
+            {/* Rotas públicas - NÃO têm acesso ao contexto de transações */}
+            <Route path="/login" element={<Login />} />
 
-              {/* Rotas protegidas (exigem autenticação) */}
-              <Route element={
-                <PrivateRoute>
+            {/* Rotas protegidas (exigem autenticação) */}
+            <Route element={
+              <PrivateRoute>
+                <TransactionsProvider>
                   <Layout />
-                </PrivateRoute>
-              }>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/transacoes" element={<Transacoes />} />
-                <Route path="/transacoes/adicionar" element={<AddTransaction />} />
-                <Route path="/transacoes/editar/:id" element={<EditTransaction />} />
-                <Route path="/contas" element={<Contas />} />
-                <Route path="/relatorios" element={<Relatorios />} />
-                <Route path="/config" element={<Configuracoes />} />
-              </Route>
+                </TransactionsProvider>
+              </PrivateRoute>
+            }>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/transacoes" element={<Transacoes />} />
+              <Route path="/transacoes/adicionar" element={<AddTransaction />} />
+              <Route path="/transacoes/editar/:id" element={<EditTransaction />} />
+              <Route path="/contas" element={<Contas />} />
+              <Route path="/relatorios" element={<Relatorios />} />
+              <Route path="/config" element={<Configuracoes />} />
+            </Route>
 
-              {/* Redirecionamento genérico */}
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </SidebarProvider>
-        </TransactionsProvider>
+            {/* Redirecionamento genérico */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </SidebarProvider>
       </AuthProvider>
     </Router>
   );
